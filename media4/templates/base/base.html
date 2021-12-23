@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}{% endblock title %}</title>
+
+        <!-- Bootstrap core css -->
+        <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/style.css' %}" rel="stylesheet">
+        <link href="{% static 'css/side-bar.css' %}" rel="stylesheet">
+        <link href="{% static 'fontawesome/css/all.min.css' %}" rel="stylesheet">
+        <link href="{% static 'image-uploader/src/image-uploader.css' %}" rel="stylesheet">
+        <link href="{% static 'magnific-popup/magnific.css' %}" rel="stylesheet">
+        <link href="{% static 'mediaelement/build/mediaelementplayer.min.css' %}" rel="stylesheet">
+        <link href="{% static 'mediaelement/quality/quality.min.css' %}" rel="stylesheet">
+        <link href="{% static 'mediaelement/jump-forward/jump-forward.min.css' %}" rel="stylesheet">
+        <link href="{% static 'mediaelement/skip-back/skip-back.min.css' %}" rel="stylesheet">
+        <link href="{% static 'mediaelement/a11y/a11y.min.css' %}" rel="stylesheet">
+        <link href="{% static 'pagination/pagination.min.css' %}" rel="stylesheet">
+        <link href="{% static 'video-popup/css/videopopup.css' %}" rel="stylesheet">
+
+
+        <script src="{% static 'jquery/js/jquery-3.6.0.min.js' %}"></script>
+        <script src="{% static 'image-uploader/src/image-uploader.js' %}"></script>
+    </head>
+
+    <body>
+        {% if not login_page %}
+        {% include './header.html' %}
+        {% endif %}
+
+        {% block content %}{% endblock content %}
+
+        {% if not login_page %}
+        <div class="app-footer-bar">
+            <a href="/" class="p-2 ms-3 menu-icon">
+                <span class="btn-round-lg">
+                    <i class="fas fa-home"></i>
+                </span>
+            </a>
+            <a href="{% url 'media4:profile' user_id=profile.user_id %}" class="p-2 ms-3 menu-icon">
+                <span class="btn-round-lg">
+                    <i class="fas fa-user-alt"></i>
+                </span>
+            </a>
+            <a href="" class="p-2 ms-3 menu-icon">
+                <span class="btn-round-lg">
+                    <i class="fas fa-users"></i>
+                </span>
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- script -->
+        <script src="{% static 'js/script.js' %}"></script>
+        <!-- Bootstrap core JavaScript -->
+        <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+        <script src="{% static 'fontawesome/js/all.min.js' %}"></script>
+        <script src="{% static 'magnific-popup/magnific.js' %}"></script>
+        <script src="{% static 'mediaelement/build/mediaelement.min.js' %}"></script>
+        <script src="{% static 'mediaelement/build/mediaelement-and-player.min.js' %}"></script>
+        <script src="{% static 'mediaelement/quality/quality.min.js' %}"></script>
+        <script src="{% static 'mediaelement/jump-forward/jump-forward-i18n.js' %}"></script>
+        <script src="{% static 'mediaelement/jump-forward/jump-forward.min.js' %}"></script>
+        <script src="{% static 'mediaelement/skip-back/skip-back-i18n.js' %}"></script>
+        <script src="{% static 'mediaelement/skip-back/skip-back.min.js' %}"></script>
+        <script src="{% static 'mediaelement/a11y/a11y-i18n.js' %}"></script>
+        <script src="{% static 'mediaelement/a11y/a11y.min.js' %}"></script>
+        <script src="{% static 'progress-bar/js/jquery.progressTimer.js' %}"></script>
+        <script src="{% static 'pagination/pagination.js' %}"></script>
+        <!-- Jquery -->
+        <script src="{% static 'video-popup/js/videopopup.js' %}"></script>
+    </body>
+</html>

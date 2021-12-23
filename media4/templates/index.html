@@ -1,0 +1,377 @@
+{% extends './base/base.html' %}
+{% block title %}
+Home
+{% endblock title %}
+{% block content %}
+<div class="container bootstrap snippets bootdey main-container">
+    <div class="row">
+        <div class="col-md-1 col-lg-2"></div>
+        <div class="col-md-10 col-lg-8 col-sm-12">
+            <div class="card p-2">
+                <div class="row">
+                    <div class="col-md-1 col-1">
+                        <a href="{% url 'media4:profile' user_id=profile.user_id %}">
+                            <img src="{{ profile.avatar }}" class="w-40 rounded-circle" alt="">
+                        </a>
+                    </div>
+                    <div class="col-md-11 col-11">
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn_compose" data-toggle="modal" data-target="#compose">
+                            What's on your mind?
+                        </button>
+
+                        <!-- Modal -->
+                    </div>
+                </div>
+                <div class="dropdown-divider"></div>
+
+                <div class="d-flex justify-content-center pb-2">
+                    <button type="button" class="btn btn_compose_img" data-toggle="modal" data-target="#compose">
+                        <i class="far fa-images"></i>Phont/Video
+                    </button>
+                </div>
+
+                <form id="form_post" enctype="multipart/form-data">
+                    <div class="modal fade" id="compose" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-scrollable" role="document">
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Create post</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    {% csrf_token %}
+                                    <!-- status -->
+                                    <textarea class="form-control compose_status mb-2"
+                                        placeholder="What's in your mind?" name="status"></textarea>
+
+                                    <!-- post field -->
+                                    <div class="input-images"></div>
+                                    <div class="loading-progress"></div>
+                                </div>
+                                <!-- <div class="progress">
+                                    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+                                        aria-valuemax="100" style="width: 0%;"></div>
+                                </div> -->
+                                <!-- footer model -->
+                                <div class="modal-footer">
+
+                                    <button id="post" type="submit" class="btn btn-primary">
+                                        <div class="spinner-border spinner-border-sm mr-2 d-none spinner_post"
+                                            role="status">
+                                            <span class="sr-only">Loading...</span>
+                                        </div>
+                                        Post
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+
+
+            <div class="text-center d-none" id="spinner_feed">
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+
+            <div class="feed_content"></div>
+
+            <div class="text-center d-none" id="spinner_load_more">
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<div class="modal fade" id="img_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="d-flex justify-content-end">
+                <button type="button" class="close p-2" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <img src="https://bootdey.com/img/Content/avatar/avatar3.png">
+        </div>
+    </div>
+</div>
+<script>
+    $('.input-images').imageUploader();
+    $.ajax({
+        type: 'get',
+        url: "{% url 'media4:feed' %}",
+        data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        beforeSend: (res) => {
+            $('#spinner_feed').removeClass('d-none')
+        },
+
+    }).done((res) => {
+        $('#spinner_feed').addClass('d-none')
+        let load_feed_content = ''
+
+        $.each(res.result, function (i, val) {
+            let user = val.user.profile
+            load_feed_content += feed_content({
+                name: user.first_name,
+                avatar: user.avatar,
+                thumbnail: val.thumbnail,
+                uploaded: calculate_duration(val.upload_date),
+                caption: val.title,
+                resource_type: val.resource_type,
+                uuid: val.uuid,
+                media: val.media
+            })
+        })
+        $('.feed_content').html(load_feed_content)
+        var scrollLoad = true;
+        let current_page = 1
+
+        $(window).scroll(function () {
+
+            //if scroll to buttom load more data
+            if ($(window).scrollTop() + $(window).height() == $(document).height()) {
+                current_page += 1
+                $.ajax({
+                    type: 'get',
+                    url: "{% url 'media4:feed' %}",
+                    data: {
+                        current_page: current_page,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    beforeSend: (res) => {
+                        $('#spinner_load_more').removeClass('d-none')
+                    },
+
+                }).done((res) => {
+                    $('#spinner_load_more').addClass('d-none')
+                    $.each(res.result, function (i, val) {
+                        let user = val.user.profile
+                        load_feed_content += feed_content({
+                            name: user.first_name,
+                            avatar: user.avatar,
+                            thumbnail: val.thumbnail,
+                            uploaded: calculate_duration(val.upload_date),
+                            caption: val.title,
+                            resource_type: val.resource_type,
+                            uuid: val.uuid,
+                            media: val.media
+                        })
+                    })
+
+                    $('.feed_content').html(load_feed_content)
+                }).then(() => {
+                    magnifi_main_popup()
+                    mediaElement()
+                })
+                scrollLoad = false;
+            }
+        });
+
+    }).then(() => {
+        mediaElement()
+        magnifi_main_popup()
+    }).fail((xhr, err) => {
+        console.log(xhr)
+        console.log(err)
+    })
+    function calculate_duration(time) {
+        var date = new Date((time || "").replace(/-/g, "/").replace(/[TZ]/g, " ")),
+            diff = (((new Date()).getTime() - date.getTime()) / 1000),
+            day_diff = Math.floor(diff / 86400);
+
+        if (isNaN(day_diff) || day_diff < 0 || day_diff >= 31)
+            return;
+
+        return day_diff == 0 && (
+            diff < 60 && "just now" ||
+            diff < 120 && "1 minute ago" ||
+            diff < 3600 && Math.floor(diff / 60) + " minutes ago" ||
+            diff < 7200 && "1 hour ago" ||
+            diff < 86400 && Math.floor(diff / 3600) + " hours ago") ||
+            day_diff == 1 && "Yesterday" ||
+            day_diff < 7 && day_diff + " days ago" ||
+            day_diff < 31 && Math.ceil(day_diff / 7) + " weeks ago";
+    }
+
+    function feed_content({
+        name,
+        avatar,
+        thumbnail,
+        uploaded,
+        caption,
+        resource_type,
+        uuid,
+        media
+    }) {
+        let content_type
+        let ext_content = media.split('.')
+        if (!ext_content.includes('mp4')) {
+            content_type = `\
+            <div class="popup-gallery mb-2">\
+                <div class="cover_thumbnail">\
+                    <a href="${thumbnail}">\
+                        <img class="img-fluid pad" src="${thumbnail}" alt="Photo">\
+                    </a>\
+                </div>\
+            </div>`;
+        } else {
+            content_type = `<video class="media_video" width="100%" height="700px" poster="${thumbnail}" controls="controls" preload="none">
+                <source type="video/mp4" src="${media}" size="720" data-quality="HD" />
+            </video>`;
+        }
+        let feed_content = `\
+        <div class="box box-widget">\
+            <div class="box-header with-border">\
+                <div class="user-block">\
+                    <img class="img-circle" src="${avatar}" alt="User Image">\
+                    <span class="username"><a href="${uuid}">${name}</a></span>\
+                    <span class="description">${uploaded}</span>\
+                </div>\
+            </div>\
+            <div class="box-body" style="display: block;">\
+                <p>${caption}</p>\
+                    ${media && thumbnail ? content_type : ''}\
+                <div class="mt-2">\
+                    <button type="button" class="btn btn-default btn-xs"><i class="fa fa-share"></i> Share</button>\
+                    <button type="button" class="btn btn-default btn-xs"><i class="fa fa-thumbs-o-up"></i> Like</button>\
+                    <span class="pull-right text-muted">127 likes - 3 comments</span>\
+                </div>\
+            </div>\
+            <div class="box-footer box-comments" style="display: block;">\
+                <div class="box-comment">\
+                    <img class="img-circle img-sm" src="https://bootdey.com/img/Content/avatar/avatar2.png"\
+                        alt="User Image">\
+                    <div class="comment-text">\
+                        <span class="username">\
+                            Maria Gonzales
+                            <span class="text-muted pull-right">8:03 PM Today</span>
+                        </span>
+                        It is a long established fact that a reader will be distracted
+                        by the readable content of a page when looking at its layout.
+                    </div>
+                </div>
+
+                <div class="box-comment">
+                    <img class="img-circle img-sm" src="https://bootdey.com/img/Content/avatar/avatar3.png"
+                        alt="User Image">
+                    <div class="comment-text">
+                        <span class="username">
+                            Luna Stark
+                            <span class="text-muted pull-right">8:03 PM Today</span>
+                        </span>
+                        It is a long established fact that a reader will be distracted
+                        by the readable content of a page when looking at its layout.
+                    </div>
+                </div>
+            </div>
+            <div class="box-footer" style="display: block;">
+                <form action="#" method="post">
+                    <img class="img-responsive img-circle img-sm"
+                        src="https://bootdey.com/img/Content/avatar/avatar1.png" alt="Alt Text">
+                    <div class="img-push">
+                        <input type="text" class="form-control input-sm" placeholder="Press enter to post comment">
+                    </div>
+                </form>
+            </div>
+        </div>`;
+        return feed_content
+    }
+</script>
+
+<script>
+
+    $(document).on('click', '#post', function (e) {
+        e.preventDefault()
+        var form = document.getElementById('form_post')
+        var formdata = new FormData(form)
+        var progress
+        var status = $('.compose_status').val()
+        var file = $('input[name="images"]')[0].files.length
+
+        if (status != '' || file != 0) {
+            $.ajax({
+                type: "post",
+                url: "{% url 'media4:post' %}",
+                data: formdata,
+                processData: false,
+                contentType: false,
+                beforeSend: () => {
+                    progress = $(".loading-progress").progressTimer({
+                        timeLimit: 600,
+                    })
+                    $(".spinner_post").removeClass('d-none')
+                    $('#post').prop('disabled', true)
+                }
+            }).done((res) => {
+                if (res) {
+                    progress.progressTimer('complete')
+                    $(".spinner_post").addClass('d-none')
+                    window.location.href = '/'
+                    console.log(res)
+                }
+            });
+        } else {
+            alert("Field must'n blank...")
+        }
+    })
+
+    function magnifi_main_popup() {
+        $(document).ready(function () {
+            $('.popup-gallery').magnificPopup({
+                delegate: 'a',
+                type: 'image',
+                tLoading: 'Loading image #%curr%...',
+                mainClass: 'mfp-img-mobile',
+                gallery: {
+                    enabled: false,
+                    navigateByImgClick: true,
+                    preload: [0] // Will preload 0 - before current, and 1 after the current image
+                },
+                image: {
+                    tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
+                    titleSrc: function (item) {
+                        return item.el.attr('title') + '<small>by Marsel Van Oosten</small>';
+                    }
+                }
+            });
+        });
+    }
+
+    function mediaElement() {
+        $('video').mediaelementplayer({
+            features: ['playpause', 'progress', 'duration', 'volume', 'speed', 'skipback', 'jumpforward', 'a11y', 'fullscreen'],
+            jumpForwardInterval: 5,
+            skipBackInterval: 5,
+            iconSprite: "static/mediaelement/build/mejs-controls.svg",
+            startVolume: 0.5,
+            enableKeyboard: true,
+            pauseOtherPlayers: true,
+
+            keyActions: [
+                { keys: [32, 179], action: function (player, media) { (player.paused || player.ended) ? player.play() : player.pause() } }
+            ],
+
+            success: (mediaElement, originalNode, instance) => {
+
+            }
+
+        })
+    }
+
+</script>
+
+{% endblock content %}

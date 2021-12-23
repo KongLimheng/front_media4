@@ -1,0 +1,55 @@
+{% extends 'base/base.html' %}
+{% block title %}
+Login
+{% endblock title %}
+{% block content %}
+<div class="container pb-5 mb-sm-4 main-container">
+    <div class="d-flex justify-content-center">
+        <div class="col-md-6 pt-sm-3">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h4 mb-1">Verify OTP</h2>
+                    <hr>
+                    <form class="needs-validation" novalidate action="{% url 'media4:verify' %}" method="post">
+                        {% csrf_token %}
+                        <div class="input-group form-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            </div>
+                            <input name="otp" id="otp" class="form-control" type='tel' placeholder="OTP number" required>
+                            <!-- <div class="invalid-feedback">Please enter valid email address!</div> -->
+                        </div>
+                        <input type="hidden" name="phone" value="{{ phone }}" id="phone">
+                        <hr class="mt-4">
+                        <div class="text-right pt-4">
+                            <button class="btn btn-primary" type="submit" id="submit_otp">Sign In</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).on('click', '#submit_otp', function(e){
+        e.preventDefault()
+        let phone = $('#phone').val()
+        let otp = $('#otp').val()
+        $.ajax({
+            type: "POST",
+            url: "{% url 'media4:verify' %}",
+            data: {
+                otp: otp,
+                phone: phone,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+        
+        }).done((res)=>{
+            console.log(res)
+            if(res.message){
+                window.location.href = '/'
+            }
+        })
+    })
+</script>
+{% endblock content %}

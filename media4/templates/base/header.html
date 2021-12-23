@@ -1,0 +1,37 @@
+<header class="bg-white media-header shadow-xs">
+    <div class="nav-top">Media</div>
+    <div class="center-item center-menu-icon">
+        <a href="{% url 'media4:index' %}" class="p-2 ms-3 menu-icon">
+            <span class="btn-round-lg bg-greylight {% if home %}active-header-icon{% endif %} item-click">
+                <i class="fas fa-home"></i>
+            </span>
+        </a>
+        <a href="{% url 'media4:profile' user_id=profile.user_id  %}" class="p-2 ms-3 menu-icon">
+            <span class="btn-round-lg bg-greylight {% if profile_page %}active-header-icon{% endif %} item-click">
+                <i class="fas fa-user-alt"></i>
+            </span>
+        </a>
+        <a href="" class="p-2 ms-3 menu-icon">
+            <span class="btn-round-lg bg-greylight">
+                <i class="fas fa-video"></i>
+            </span>
+        </a>
+        <!-- <a href="" class="p-2 ms-3 menu-icon">
+            <span class="btn-round-lg bg-greylight">
+                <i class="fas fa-home"></i>
+            </span>
+        </a> -->
+    </div>
+    <form action="#" class="float-left header-search">
+        <div class="form-group mb-0 icon-input">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Start typing to search.." class="border-0 input-form">
+        </div>
+    </form>
+    <div class="config-header ml-4">
+        <a href="{% url 'media4:profile' user_id=profile.user_id %}" class="p-0 menu-icon">
+            <img src="{{ profile.avatar }}" class="w-40 rounded-circle" alt="">
+        </a>
+    </div>
+
+</header>
